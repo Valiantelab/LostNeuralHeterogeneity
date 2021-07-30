@@ -1,4 +1,5 @@
-function [real, imag]=PlotEigenvaluesAndFixedPoints(filename,S,K,I,U, sigmae, sigmai)
+function [real, imag]=PlotEigenvaluesAndFixedPoints(filename, sigmae, sigmai)
+
 
 %% Import Data
 FixedPoints=csvread(filename);
@@ -6,6 +7,9 @@ FixedPoints=csvread(filename);
 %% Parameters/Storage
 a_e=1;
 a_i=2;
+
+I=15.625;
+U=62;
 
 % Gamma=0.2/(-I/100);
 %or
@@ -209,27 +213,37 @@ for i=1:Isteps
     for j=[1 3 5 7]
         if imag(i,j)~=0 && isnan(imag(i,j))==0
             if real(i,j)>0
-                plot(currents(i), real(i,j), 'Color', purp, 'Marker', '.', 'MarkerSize', 25)
+                plot(currents(i), real(i,j), 'Color', purp, 'Marker', '.', 'MarkerSize', 15)
                 hold on
             end
             if real(i,j)<0
-                plot(currents(i), real(i,j), 'k.', 'MarkerSize', 25)
+                plot(currents(i), real(i,j), 'k.', 'MarkerSize', 15)
                 hold on
             end
             storereal(count)=real(i,j);
             count=count+1;
         end
         if real(i,j)~=real(i,j+1)
+            
             if real(i,j)<0 && real(i,j+1)<0
-                plot(currents(i), real(i,j), 'Color', gold, 'Marker', '.', 'MarkerSize', 25)
+                plot(currents(i), real(i,j), 'Color', gold, 'Marker', '.', 'MarkerSize', 15)
                 hold on
-                plot(currents(i), real(i,j+1), 'Color', gold, 'Marker', '.', 'MarkerSize', 25)
+                plot(currents(i), real(i,j+1), 'Color', gold, 'Marker', '.', 'MarkerSize', 15)
                 hold on
             end
+
+            % Change sink to black for panel (d)
+%             if real(i,j)<0 && real(i,j+1)<0
+%                 plot(currents(i), real(i,j), 'Color', 'k', 'Marker', '.', 'MarkerSize', 15)
+%                 hold on
+%                 plot(currents(i), real(i,j+1), 'Color', 'k', 'Marker', '.', 'MarkerSize', 15)
+%                 hold on
+%             end
+            
             if real(i,j)*real(i,j+1)<0
-                plot(currents(i), real(i,j), 'color', green, 'Marker', '.', 'MarkerSize', 25)
+                plot(currents(i), real(i,j), 'color', green, 'Marker', '.', 'MarkerSize', 15)
                 hold on
-                plot(currents(i), real(i,j+1),  'color', green, 'Marker', '.', 'MarkerSize', 15)
+                plot(currents(i), real(i,j+1),  'color', green, 'Marker', '.', 'MarkerSize', 10)
                 hold on
             end
             
@@ -241,12 +255,12 @@ for i=1:Isteps
     end
 end
 hold on
-plot(currents, zeros(1,length(currents)), 'k-', 'LineWidth', 1)
+plot(currents, zeros(1,length(currents)), 'k-', 'LineWidth', 2)
 set(gca, 'FontSize', 20);
 %         xlabel('Time, ms', 'FontSize', 34)
 ylabel({'Dampening'; 'Rate'}, 'FontSize', 24)
-axis([-I/100 I/100 min([storereal,0])-.1 max([storereal,0])+.1])
-
+axis([-I I -3 3])
+set(gca, 'XTick', [-15.625, -10.625, -5.625, -0.625, 4.625, 9.625, 14.625])
 set(gca, 'XTickLabel', []);
 
 
@@ -261,15 +275,15 @@ for i=1:Isteps
     for j=[1 3 5 7]
         if imag(i,j)~=0 && isnan(imag(i,j))==0
             if real (i,j)>0
-                plot(currents(i), imag(i,j), 'Color', purp, 'Marker', '.', 'MarkerSize', 25)
+                plot(currents(i), imag(i,j), 'Color', purp, 'Marker', '.', 'MarkerSize', 15)
                 hold on
-                plot(currents(i), imag(i,j+1), 'Color', purp, 'Marker', '.', 'MarkerSize', 25)
+                plot(currents(i), imag(i,j+1), 'Color', purp, 'Marker', '.', 'MarkerSize', 15)
                 hold on
             end
             if real (i,j)<0
-                plot(currents(i), imag(i,j), 'k.', 'MarkerSize', 25)
+                plot(currents(i), imag(i,j), 'k.', 'MarkerSize', 15)
                 hold on
-                plot(currents(i), imag(i,j+1), 'k.', 'MarkerSize', 25)
+                plot(currents(i), imag(i,j+1), 'k.', 'MarkerSize', 15)
                 hold on
             end
         end
@@ -297,12 +311,13 @@ for i=1:Isteps
 
 end
 hold on
-plot(currents, zeros(1,length(currents)), 'k-', 'LineWidth', 1)
+plot(currents, zeros(1,length(currents)), 'k-', 'LineWidth', 2)
 set(gca, 'FontSize', 20);
-xlabel('Input Current', 'FontSize', 24)
+xlabel('Drive', 'FontSize', 24)
 ylabel({'Oscillatory'; 'Frequency (Hz)'}, 'FontSize', 24)
-axis([-I/100 I/100 min(imag(:,2))-1 max(imag(:,1))+1])
-% set(gca, 'XTickLabel', []);
+axis([-I I -22 22])
+set(gca, 'XTick', [-15.625, -10.625, -5.625, -0.625, 4.625, 9.625, 14.625])
+set(gca, 'XTickLabel', [0 5 10 15 20 25 30]);
 
 
 
@@ -334,10 +349,17 @@ for i=1:Isteps
                 plot(currents(i), FixedPoints(i,j), 'color', green, 'Marker', '.', 'MarkerSize', 25)
                 hold on
             end
+            
             if imag(i,j)==0 && real(i,j)<0 && real(i,j+1)<0
                 plot(currents(i), FixedPoints(i,j),  'Color', gold, 'Marker', '.', 'MarkerSize', 25)
                 hold on
             end
+            
+            % Change sink to black for panel (d)
+%             if imag(i,j)==0 && real(i,j)<0 && real(i,j+1)<0
+%                 plot(currents(i), FixedPoints(i,j),  'Color', 'k', 'Marker', '.', 'MarkerSize', 25)
+%                 hold on
+%             end
         end
     end
 end
@@ -345,25 +367,26 @@ hold on
 set(gca, 'FontSize', 20);
 % xlabel('Input Current', 'FontSize', 24)
 ylabel({'Excitatory'; 'Fixed Point, U_e'}, 'FontSize', 24)
-axis([-I/100 I/100 min(min(FixedPoints(:,[1 3 5])))-.5 max(FixedPoints(:,1))+.5])
+axis([-I I -25 0])
+set(gca, 'XTick', [-15.625, -10.625, -5.625, -0.625, 4.625, 9.625, 14.625])
 set(gca, 'XTickLabel', []);
 
 
 
 
-str1=sprintf('EigenvaluesBifurcNEW_S%d_K%d_U%d_SigE%d_SigI%d.png', S, K,U, sigmae*10000, sigmai*10000);
+str1=sprintf('EigenvaluesBifurcREVISIONS_SigE%d_SigI%d.png',sigmae*10000, sigmai*10000);
 %     saveas(gcf, str1)
 set(gcf,'PaperPositionMode','auto')
 print(str1, '-dpng', '-r0');
 
-str2=sprintf('EigenvaluesBifurcNEW_S%d_K%d_U%d_SigE%d_SigI%d.eps', S, K,U, sigmae*10000, sigmai*10000);
+str2=sprintf('EigenvaluesBifurcREVISIONS_SigE%d_SigI%d.eps',sigmae*10000, sigmai*10000);
 print(gcf,'-depsc','-painters',str2)
 
 
-csvname=sprintf('EigenvaluesBifurcNEWReal_S%d_K%d_U%d_SigE%d_SigI%d.csv', S, K,U, sigmae*10000, sigmai*10000);
+csvname=sprintf('EigenvaluesBifurcREVISIONSReal_SigE%d_SigI%d.csv',sigmae*10000, sigmai*10000);
 csvwrite(csvname, real);
 
-csvname=sprintf('EigenvaluesBifurcNEWImag_S%d_K%d_U%d_SigE%d_SigI%d.csv', S, K,U, sigmae*10000, sigmai*10000);
+csvname=sprintf('EigenvaluesBifurcREVISIONSImag_SigE%d_SigI%d.csv',sigmae*10000, sigmai*10000);
 csvwrite(csvname, imag);
 
 
