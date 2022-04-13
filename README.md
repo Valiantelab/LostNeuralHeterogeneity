@@ -11,3 +11,4 @@ Figure 4: Code to generate plots for the average values of the Synchrony Measure
 
 Figure 5: Code to generate plots. Fitting was performed using MATLAB tools as described in the Methods section of the paper.
 
+[![DOI](https://zenodo.org/badge/386668057.svg)](https://zenodo.org/badge/latestdoi/386668057)
