@@ -1,8 +1,86 @@
-function [real, imag]=PlotEigenvaluesAndFixedPoints(filename, sigmae, sigmai)
-
+function [real, imag]=PlotEigenvaluesAndFixedPoints(filename,S,K,I,U, sigmae, sigmai)
 
 %% Import Data
 FixedPoints=csvread(filename);
+
+%% Process Data
+markers=find(diff(FixedPoints(:,3)));
+markers=[0; markers; length(FixedPoints(:,1))];
+for i=1:length(markers)-1
+    runs{i}=FixedPoints((1+markers(i)):markers(i+1), :);
+end
+
+fixed=zeros(length(runs),6);
+for i=1:length(runs)
+    %% Plot Curves
+    close all
+    efixed=zeros(0,2);
+    ifixed=zeros(0,2);
+    
+    
+    for j=1:length(runs{i}(:,1))
+        if runs{i}(j,4)==0
+            efixed=[efixed; runs{i}(j,5), runs{i}(j,6)];
+        end
+        if runs{i}(j,4)==1
+            ifixed=[ifixed; runs{i}(j,5), runs{i}(j,6)];
+        end
+    end
+    
+    %Find "intersection"
+    tol=(U*2)/K;
+    count=0;
+    check=0;
+    for j=1:length(efixed)
+        for k=1:length(ifixed)
+            dif1=abs(efixed(j,1)-ifixed(k,1));
+            dif2=abs(efixed(j,2)-ifixed(k,2));
+            %             if dif1<tol && dif2<tol && count==0
+            if dif1==0 && dif2==0 && count==0
+                fixed(i,1)=efixed(j,1);
+                fixed(i,2)=efixed(j,2);
+                count=count+1;
+            end
+            %             if dif1<tol && dif2<tol && count>0
+            if dif1==0 && dif2==0 && count>0
+                check=0;
+                for l=1:count
+                    %                     if sqrt((fixed(i,1+(l-1)*2)-efixed(j,1))^2+(fixed(i,2+(l-1)*2)-efixed(j,2))^2)<25*tol
+                    %                         check=check+1;
+                    %                     end
+                    if abs(fixed(i,1+(l-1)*2)-efixed(j,1))<2*tol
+                        check=check+1;
+                    end
+                    if abs(fixed(i,2+(l-1)*2)-efixed(j,2))<2*tol
+                        check=check+1;
+                    end
+                    
+                    
+                end
+                if check==0
+                    disp('MULTIPLE FIXED POINTS!!!')
+                    disp([i count+1])
+                    fixed(i,1+2*count)=efixed(j,1);
+                    fixed(i,2+2*count)=efixed(j,2);
+                    count=count+1;
+                end
+            end
+        end
+    end
+end
+
+csvname=sprintf('FixedPointsBifurc_S%d_K%d_U%d_SigE%d_SigI%d.csv', S, K,U, sigmae*10000, sigmai*10000);
+csvwrite(csvname, fixed);
+
+FixedPoints=fixed;
+
+
+
+
+
+
+
+
 
 %% Parameters/Storage
 a_e=1;
@@ -11,8 +89,6 @@ a_i=2;
 I=15.625;
 U=62;
 
-% Gamma=0.2/(-I/100);
-%or
 Gamma=round(1/U,3);
 beta=300;
 
@@ -21,35 +97,10 @@ wie=-4.7;
 wei=3.0;
 wii=-0.13;
 
-% sigma_i=1:.5:10.5;
-% sigma_e=sigma_i;
-% sigma=zeros(S*S,2);
 
 Isteps=250;
 
 
-% for i=1:length(sigma_e)^2
-%     for j=length(FixedPoints(1,:))
-%         if FixedPoints(i,j)>10
-%             if mod(j,2)==0
-%                 FixedPoints(i,j)=0;
-%                 FixedPoints(i,j-1)=0;
-%             elseif mod(j,2)==1
-%                 FixedPoints(i,j)=0;
-%                 FixedPoints(i,j+1)=0;
-%             end
-%         end
-%     end
-% end
-
-% count=1;
-% for i=1:S
-%     for j=1:S
-%         sigma(count,1)=sigma_e(i);
-%         sigma(count,2)=sigma_i(j);
-%         count=count+1;
-%     end
-% end
 
 real=zeros(Isteps,8);
 imag=zeros(Isteps,8);
@@ -57,8 +108,6 @@ imag=zeros(Isteps,8);
 %% Loop through fixed points
 for i=1:Isteps
     fixedpointnum=ceil(sum(FixedPoints(i,:)~=0)./2);
-%     sigmae=sigma(i,1);
-%     sigmai=sigma(i,2);
     
     for j=1:fixedpointnum
         U_e=FixedPoints(i,1+(j-1)*2);
@@ -115,83 +164,6 @@ for i=1:Isteps
     
 end
 
-% %% Organize Eigenvalues
-% count=1;
-% 
-% %If there is an imaginary eigenvalue, order it first
-% for i=1:Isteps
-%     check=find(imag(count,:));
-%     if sum(3==check)>0 && sum(1==check)==0
-%         real(count, [1 3])=real(count, [3 1]);
-%         real(count, [2 4])=real(count, [4 2]);
-%         imag(count, [1 3])=imag(count, [3 1]);
-%         imag(count, [2 4])=imag(count, [4 2]);
-%     end
-%     if sum(5==check)>0  && sum(1==check)==0
-%         real(count, [1 5])=real(count, [5 1]);
-%         real(count, [2 6])=real(count, [6 2]);
-%         imag(count, [1 5])=imag(count, [5 1]);
-%         imag(count, [2 6])=imag(count, [6 2]);
-%     end
-% %     if sum(5==check)>0 && sum(1==check)>1 && sum(3==check)==0
-% %         real(count, [3 5])=real(count, [5 3]);
-% %         real(count, [4 6])=real(count, [6 4]);
-% %         imag(count, [3 5])=imag(count, [5 3]);
-% %         imag(count, [4 6])=imag(count, [6 4]);
-% %     end
-%     count=count+1;
-% end
-% 
-% %If there is no imaginary eigenvalue, reorder things so that the first
-% %entry is NaN, and also make the second pair the sink
-% if length(FixedPoints(1,:))>2
-%     count=1;
-%     for i=1:Isteps
-%         check=find(real(count,:));
-%         if imag(count,1)==0 && length(check)==2
-%             real(count, [1 3])=real(count, [3 1]);
-%             real(count, [2 4])=real(count, [4 2]);
-%             imag(count, [1 3])=imag(count, [3 1]);
-%             imag(count, [2 4])=imag(count, [4 2]);
-%             imag(count, 1)=NaN;
-%             imag(count, 2)=NaN;
-%             real(count, 1)=NaN;
-%             real(count, 2)=NaN;
-%         end
-%         
-%         if imag(count,1)==0 && length(check)==4
-%             real(count, [1 3])=real(count, [3 1]);
-%             real(count, [2 4])=real(count, [4 2]);
-%             imag(count, [1 3])=imag(count, [3 1]);
-%             imag(count, [2 4])=imag(count, [4 2]);
-%             
-%             real(count, [1 5])=real(count, [5 1]);
-%             real(count, [2 6])=real(count, [6 2]);
-%             imag(count, [1 5])=imag(count, [5 1]);
-%             imag(count, [2 6])=imag(count, [6 2]);
-%             
-%             imag(count, 1)=NaN;
-%             imag(count, 2)=NaN;
-%             real(count, 1)=NaN;
-%             real(count, 2)=NaN;
-%         end
-% %         count
-%         if (real(count,5)<0 && real(count,6)<0) || (real(count,5)>0 && real(count,6)>0)
-%             real(count, [4 6])=real(count, [6 4]);
-%             real(count, [3 5])=real(count, [5 3]);
-%         end
-%         
-%         if real(count,1)<0 && real(count,2)<0 && imag(count,1)==0
-%             real(count, [1 3])=real(count, [3 1]);
-%             real(count, [2 4])=real(count, [4 2]);
-%             real(count, [1 5])=real(count, [5 1]);
-%             real(count, [2 6])=real(count, [6 2]);
-%         end
-%         
-%         count=count+1;
-%     end
-% end
-% 
 
 
 
@@ -201,7 +173,7 @@ currents=linspace(-15.625,15.5,250);
 
 figure('units','normalized','position',[0 0 .5625 1])
 green = [0 0.4 0];
-blue2= [0.4 0.7 0.9]; 
+blue2= [0.4 0.7 0.9];
 grey=[.5 .5 .5];
 purp=[.4 0 .7];
 gold=[.9 .8 0];
@@ -231,14 +203,14 @@ for i=1:Isteps
                 plot(currents(i), real(i,j+1), 'Color', gold, 'Marker', '.', 'MarkerSize', 15)
                 hold on
             end
-
+            
             % Change sink to black for panel (d)
-%             if real(i,j)<0 && real(i,j+1)<0
-%                 plot(currents(i), real(i,j), 'Color', 'k', 'Marker', '.', 'MarkerSize', 15)
-%                 hold on
-%                 plot(currents(i), real(i,j+1), 'Color', 'k', 'Marker', '.', 'MarkerSize', 15)
-%                 hold on
-%             end
+            %             if real(i,j)<0 && real(i,j+1)<0
+            %                 plot(currents(i), real(i,j), 'Color', 'k', 'Marker', '.', 'MarkerSize', 15)
+            %                 hold on
+            %                 plot(currents(i), real(i,j+1), 'Color', 'k', 'Marker', '.', 'MarkerSize', 15)
+            %                 hold on
+            %             end
             
             if real(i,j)*real(i,j+1)<0
                 plot(currents(i), real(i,j), 'color', green, 'Marker', '.', 'MarkerSize', 15)
@@ -288,27 +260,9 @@ for i=1:Isteps
             end
         end
     end
-%     if imag(i,3)~=0 && isnan(imag(i,1))==0
-%         plot(currents(i), imag(i,3), 'b.', 'MarkerSize', 25)
-%         hold on
-%         plot(currents(i), imag(i,4), 'r.', 'MarkerSize', 25)
-%         hold on
-%     end
-%     if imag(i,5)~=0 && isnan(imag(i,1))==0
-%         plot(currents(i), imag(i,5), 'b.', 'MarkerSize', 25)
-%         hold on
-%         plot(currents(i), imag(i,6), 'r.', 'MarkerSize', 25)
-%         hold on
-%     end
-%     if imag(i,7)~=0 && isnan(imag(i,1))==0
-%         plot(currents(i), imag(i,7), 'b.', 'MarkerSize', 25)
-%         hold on
-%         plot(currents(i), imag(i,8), 'r.', 'MarkerSize', 25)
-%         hold on
-%     end
-
-
-
+    
+    
+    
 end
 hold on
 plot(currents, zeros(1,length(currents)), 'k-', 'LineWidth', 2)
@@ -324,14 +278,6 @@ set(gca, 'XTickLabel', [0 5 10 15 20 25 30]);
 
 %% NOW PLOT FIXED POINT LOCATION TO SHOW BIFURCATION BETTER
 
-% Only for multiple fixed points
-% marker=find(FixedPoints(:,3)==0, 1);
-% FixedPoints(1:marker-1,[1 5])=FixedPoints(1:marker-1,[5 1]);
-% FixedPoints(1:marker-1,[2 6])=FixedPoints(1:marker-1,[6 2]);
-% real(1:marker-1,[1 5])=real(1:marker-1,[5 1]);
-% real(1:marker-1,[2 6])=real(1:marker-1,[6 2]);
-% imag(1:marker-1,[1 5])=imag(1:marker-1,[5 1]);
-% imag(1:marker-1,[2 6])=imag(1:marker-1,[6 2]);
 
 subaxis(3,1,1, 'Spacing', 0.01, 'Padding', 0.05, 'Margin', 0.05, 'PaddingBottom', 0.05, 'PaddingTop', 0.00, 'PaddingRight', 0.01, 'PaddingLeft', 0.06);
 for i=1:Isteps
@@ -356,10 +302,10 @@ for i=1:Isteps
             end
             
             % Change sink to black for panel (d)
-%             if imag(i,j)==0 && real(i,j)<0 && real(i,j+1)<0
-%                 plot(currents(i), FixedPoints(i,j),  'Color', 'k', 'Marker', '.', 'MarkerSize', 25)
-%                 hold on
-%             end
+            %             if imag(i,j)==0 && real(i,j)<0 && real(i,j+1)<0
+            %                 plot(currents(i), FixedPoints(i,j),  'Color', 'k', 'Marker', '.', 'MarkerSize', 25)
+            %                 hold on
+            %             end
         end
     end
 end
@@ -388,6 +334,4 @@ csvwrite(csvname, real);
 
 csvname=sprintf('EigenvaluesBifurcREVISIONSImag_SigE%d_SigI%d.csv',sigmae*10000, sigmai*10000);
 csvwrite(csvname, imag);
-
-
 end
