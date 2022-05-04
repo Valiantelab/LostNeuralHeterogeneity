@@ -1,4 +1,4 @@
-function [real, imag]=PlotEigenvaluesAndFixedPoints(filename,S,K,I,U, sigmae, sigmai)
+function [real, imag]=PlotEigenvaluesAndFixedPoints(filename,K,U, sigmae, sigmai)
 
 %% Import Data
 FixedPoints=csvread(filename);
@@ -69,7 +69,7 @@ for i=1:length(runs)
     end
 end
 
-csvname=sprintf('FixedPointsBifurc_S%d_K%d_U%d_SigE%d_SigI%d.csv', S, K,U, sigmae*10000, sigmai*10000);
+csvname=sprintf('FixedPointsBifurc_K%d_U%d_SigE%d_SigI%d.csv', K,U, sigmae*10000, sigmai*10000);
 csvwrite(csvname, fixed);
 
 FixedPoints=fixed;
