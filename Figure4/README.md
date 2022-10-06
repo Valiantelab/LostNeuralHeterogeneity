@@ -8,3 +8,4 @@ Matlab file PlotEigenvaluesAndFixedPoints.m will generate figures akin to the bo
 
 Remaining Matlab files are various plotting functions that may or may not be used in these sets of code (they are the "library" I keep for all my Matlab plotting code, just in case).
 
+NOTE: A new Matlab file (PlotEigenvaluesAndFixedPoints_CORRECTIONS.m) has been added to reflect the Correction made to this manuscript. This new file includes the correction to the eigenvalue calculations that yield the minor changes outlined in the Correction document.
